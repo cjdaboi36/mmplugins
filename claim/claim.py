@@ -338,6 +338,19 @@ async def check_reply(ctx):
         return ctx.author.bot or in_role or str(ctx.author.id) in thread['claimers']
     return True
 
+@checks.has_permissions(PermissionLevel.MODERATOR)
+    @commands.guild_only()
+    @claim_.command(name='limit')
+    async def claim_limit_(self, ctx, limit: int):
+        """
+        Set max threads a member can claim
+        0 = No limit
+        """
+        if await self.db.find_one({'_id': 'config'}):
+            await self.db.find_one_and_update({'_id': 'config'}, {'$set': {'limit': limit}})
+        else:
+            await self.db.insert_one({'_id': 'config', 'limit': limit})
 
+        await ctx.send(f'Set limit to {limit}')
 async def setup(bot):
     await bot.add_cog(ClaimThread(bot))
