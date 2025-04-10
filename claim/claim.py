@@ -352,5 +352,6 @@ async def check_reply(ctx):
             await self.db.insert_one({'_id': 'config', 'limit': limit})
 
         await ctx.send(f'Set limit to {limit}')
+        
 async def setup(bot):
     await bot.add_cog(ClaimThread(bot))
