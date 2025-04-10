@@ -6,27 +6,11 @@ from core.models import PermissionLevel
 from core.utils import match_user_id
 
 
-async def check_reply(ctx):
-    thread = await ctx.bot.get_cog('ClaimThread').db.find_one({'thread_id': str(ctx.thread.channel.id), 'guild': str(ctx.bot.modmail_guild.id)})
-    if thread and len(thread['claimers']) != 0:
-        in_role = False
-        if config := await ctx.bot.get_cog('ClaimThread').db.find_one({'_id': 'config'}):
-            if 'bypass_roles' in config:
-                roles = [ctx.guild.get_role(r) for r in config['bypass_roles'] if ctx.guild.get_role(r) is not None]
-                for role in roles:
-                    if role in ctx.author.roles:
-                        in_role = True
-        return ctx.author.bot or in_role or str(ctx.author.id) in thread['claimers']
-    return True
-
-
 class ClaimThread(commands.Cog):
-    """Allows supporters to claim thread by sending claim in the thread channel"""
-
+    """Allows supporters to claim threads by sending claim in the thread channel"""
     def __init__(self, bot):
         self.bot = bot
         self.db = bot.api.get_plugin_partition(self)
-        check_reply.fail_msg = 'This thread has been claimed by another user.'
         self.bot.get_command('reply').add_check(check_reply)
         self.bot.get_command('areply').add_check(check_reply)
         self.bot.get_command('fareply').add_check(check_reply)
@@ -51,6 +35,7 @@ class ClaimThread(commands.Cog):
     async def check_before_update(self, channel):
         if channel.guild != self.bot.modmail_guild or await self.bot.api.get_log(channel.id) is None:
             return False
+
         return True
 
     @commands.Cog.listener()
@@ -162,8 +147,22 @@ class ClaimThread(commands.Cog):
         embed.description = description
         await ctx.send(embed=embed)
 
-    # Additional commands like `forceclaim`, `forceunclaim`, `addclaim`, `removeclaim`, etc. remain the same
-    # Make sure to review them and refactor if necessary as shown above
+    # The other commands remain mostly the same.
+
+# Ensure the check_reply function is correctly referenced.
+async def check_reply(ctx):
+    thread = await ctx.bot.get_cog('ClaimThread').db.find_one({'thread_id': str(ctx.thread.channel.id), 'guild': str(ctx.bot.modmail_guild.id)})
+    if thread and len(thread['claimers']) != 0:
+        in_role = False
+        if config := await ctx.bot.get_cog('ClaimThread').db.find_one({'_id': 'config'}):
+            if 'bypass_roles' in config:
+                roles = [ctx.guild.get_role(r) for r in config['bypass_roles'] if ctx.guild.get_role(r) is not None]
+                for role in roles:
+                    if role in ctx.author.roles:
+                        in_role = True
+        return ctx.author.bot or in_role or str(ctx.author.id) in thread['claimers']
+    return True
+
 
 async def setup(bot):
     await bot.add_cog(ClaimThread(bot))
