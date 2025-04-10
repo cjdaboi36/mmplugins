@@ -237,7 +237,15 @@ class ClaimThread(commands.Cog):
         thread = await self.db.find_one({'thread_id': str(ctx.thread.channel.id), 'guild': str(self.bot.modmail_guild.id)})
         if thread and str(ctx.author.id) in thread['claimers']:
             await self.db.find_one_and_update({'thread_id': str(ctx.thread.channel.id), 'guild': str(self.bot.modmail_guild.id)}, {'$set': {'claimers': [str(member.id)]}})
-            await ctx.send('Added to claimers')
+            embed = discord.Embed(
+                color=self.bot.main_color,
+                title="Ticket Claimed",
+                description=f"{ctx.author.mention} has took over your ticket. Please wait for a response.",
+                timestamp=ctx.message.created_at,
+            )
+            embed.set_footer(
+                text=f"{ctx.author.name}#{ctx.author.discriminator}", icon_url=ctx.author.display_avatar.url)
+                await ctx.reply(embed=embed)
 
     @checks.has_permissions(PermissionLevel.MODERATOR)
     @checks.thread_only()
@@ -265,7 +273,7 @@ class ClaimThread(commands.Cog):
 
         await ctx.send(f'Set limit to {limit}')
 
-    @checks.has_permissions(PermissionLevel.MODERATOR)
+    @checks.has_permissions(PermissionLevel.OWNERS)
     @commands.guild_only()
     @claim_.group(name='bypass', invoke_without_command=True)
     async def claim_bypass_(self, ctx):
@@ -277,7 +285,7 @@ class ClaimThread(commands.Cog):
             else:
                 await ctx.send_help(ctx.command)
 
-    @checks.has_permissions(PermissionLevel.MODERATOR)
+    @checks.has_permissions(PermissionLevel.OWNERS)
     @commands.guild_only()
     @claim_bypass_.command(name='add')
     async def claim_bypass_add(self, ctx, *roles):
@@ -306,7 +314,7 @@ class ClaimThread(commands.Cog):
 
         await ctx.send(f'**Added to by-pass roles**:\n{added}')
 
-    @checks.has_permissions(PermissionLevel.MODERATOR)
+    @checks.has_permissions(PermissionLevel.OWNERS)
     @commands.guild_only()
     @claim_bypass_.command(name='remove')
     async def claim_bypass_remove(self, ctx, role: discord.Role):
