@@ -245,7 +245,7 @@ class ClaimThread(commands.Cog):
             )
             embed.set_footer(
                 text=f"{ctx.author.name}#{ctx.author.discriminator}", icon_url=ctx.author.display_avatar.url)
-                await ctx.reply(embed=embed)
+            await ctx.reply(embed=embed)
 
     @checks.has_permissions(PermissionLevel.MODERATOR)
     @checks.thread_only()
