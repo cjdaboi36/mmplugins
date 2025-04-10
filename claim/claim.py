@@ -64,7 +64,7 @@ class ClaimThread(commands.Cog):
             embed = discord.Embed(
                 color=self.bot.main_color,
                 title="Ticket Claimed",
-                description="{ctx.author.mention} has claimed your ticket. Please wait for a response.",
+                description=f"{ctx.author.mention} has claimed your ticket. Please wait for a response.",
                 timestamp=ctx.message.created_at,
             )
             embed.set_footer(
