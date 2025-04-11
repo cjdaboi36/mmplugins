@@ -43,9 +43,13 @@ class AntiPing(commands.Cog):
             any(role.id in self.bypass_roles for role in member.roles)
         )
 
+    async def check_permissions(self, ctx):
+        if not ctx.author.guild_permissions.administrator:
+            raise commands.MissingPermissions(["administrator"])
+
     @commands.command(name="anti-ping-user-add")
-    @has_permissions(PermissionLevel.OWNER)
     async def protect_add(self, ctx, target: discord.abc.Snowflake):
+        await self.check_permissions(ctx)  # Permission check
         embed = discord.Embed(color=self.bot_main_color)
         if isinstance(target, discord.Member):
             self.protected_users.add(target.id)
@@ -61,8 +65,8 @@ class AntiPing(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-user-remove")
-    @has_permissions(PermissionLevel.OWNER)
     async def protect_remove(self, ctx, target: discord.abc.Snowflake):
+        await self.check_permissions(ctx)  # Permission check
         embed = discord.Embed(color=self.bot_main_color)
         if isinstance(target, discord.Member):
             self.protected_users.discard(target.id)
@@ -78,8 +82,8 @@ class AntiPing(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-bypass-add")
-    @has_permissions(PermissionLevel.OWNER)
     async def bypass_add(self, ctx, target: discord.abc.Snowflake):
+        await self.check_permissions(ctx)  # Permission check
         embed = discord.Embed(color=self.bot_main_color)
         if isinstance(target, discord.Member):
             self.bypass_users.add(target.id)
@@ -95,8 +99,8 @@ class AntiPing(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-bypass-remove")
-    @has_permissions(PermissionLevel.OWNER)
     async def bypass_remove(self, ctx, target: discord.abc.Snowflake):
+        await self.check_permissions(ctx)  # Permission check
         embed = discord.Embed(color=self.bot_main_color)
         if isinstance(target, discord.Member):
             self.bypass_users.discard(target.id)
@@ -132,8 +136,8 @@ class AntiPing(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="set-anti-ping-timeout-duration")
-    @has_permissions(PermissionLevel.OWNER)
     async def set_timeout_duration(self, ctx, duration: str):
+        await self.check_permissions(ctx)  # Permission check
         embed = discord.Embed(color=self.bot_main_color)
         try:
             self.timeout_duration = parse_duration(duration)
@@ -145,8 +149,8 @@ class AntiPing(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-toggle")
-    @has_permissions(PermissionLevel.OWNER)
     async def protect_toggle(self, ctx):
+        await self.check_permissions(ctx)  # Permission check
         embed = discord.Embed(color=self.bot_main_color)
         self.protection_enabled = not self.protection_enabled
         status = "enabled ✅" if self.protection_enabled else "disabled ❌"
@@ -179,7 +183,7 @@ class AntiPing(commands.Cog):
                 if original.author.id == mentioned.id and mentioned.mention not in message.content:
                     continue
 
-            # Delay 5 seconds before attempting timeout
+            # Delay 5 seconds before first timeout
             await discord.utils.sleep_until(discord.utils.utcnow() + timedelta(seconds=5))
 
             try:
