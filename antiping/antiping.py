@@ -2,9 +2,8 @@ import discord
 from discord.ext import commands
 from datetime import datetime, timedelta
 import re
-import asyncio
 
-from discord.ext.commands import has_permissions
+from checks import has_permissions, PermissionLevel
 
 
 def parse_duration(duration_str: str) -> timedelta:
@@ -27,7 +26,7 @@ class AntiPing(commands.Cog):
         self.protection_paused = {}
         self.timeout_duration = timedelta(minutes=15)
         self.protection_enabled = True
-        self.bot_main_color = discord.Color.blue()
+        self.bot_main_color = discord.Color.blue()  # Set to your bot's main color
 
     def is_protected(self, member: discord.Member):
         if member.id in self.protection_paused:
@@ -47,39 +46,71 @@ class AntiPing(commands.Cog):
         )
 
     @commands.command(name="anti-ping-user-add")
-    @has_permissions(administrator=True)
-    async def protect_add(self, ctx, target: discord.Member):
+    @has_permissions(PermissionLevel.OWNER)
+    async def protect_add(self, ctx, target: discord.abc.Snowflake):
         embed = discord.Embed(color=self.bot_main_color)
-        self.protected_users.add(target.id)
-        embed.title = "🛡️ Protection Added"
-        embed.description = f"{target.mention} is now protected."
+        if isinstance(target, discord.Member):
+            self.protected_users.add(target.id)
+            embed.title = "🛡️ Protection Added"
+            embed.description = f"{target.mention} is now protected."
+        elif isinstance(target, discord.Role):
+            self.protected_roles.add(target.id)
+            embed.title = "🛡️ Protection Added"
+            embed.description = f"Role `{target.name}` is now protected."
+        else:
+            embed.title = "❌ Invalid Target"
+            embed.description = "The provided target is invalid."
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-user-remove")
-    @has_permissions(administrator=True)
-    async def protect_remove(self, ctx, target: discord.Member):
+    @has_permissions(PermissionLevel.OWNER)
+    async def protect_remove(self, ctx, target: discord.abc.Snowflake):
         embed = discord.Embed(color=self.bot_main_color)
-        self.protected_users.discard(target.id)
-        embed.title = "❌ Protection Removed"
-        embed.description = f"{target.mention} is no longer protected."
+        if isinstance(target, discord.Member):
+            self.protected_users.discard(target.id)
+            embed.title = "❌ Protection Removed"
+            embed.description = f"{target.mention} is no longer protected."
+        elif isinstance(target, discord.Role):
+            self.protected_roles.discard(target.id)
+            embed.title = "❌ Protection Removed"
+            embed.description = f"Role `{target.name}` is no longer protected."
+        else:
+            embed.title = "❌ Invalid Target"
+            embed.description = "The provided target is invalid."
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-bypass-add")
-    @has_permissions(administrator=True)
-    async def bypass_add(self, ctx, target: discord.Member):
+    @has_permissions(PermissionLevel.OWNER)
+    async def bypass_add(self, ctx, target: discord.abc.Snowflake):
         embed = discord.Embed(color=self.bot_main_color)
-        self.bypass_users.add(target.id)
-        embed.title = "✅ Bypass Added"
-        embed.description = f"{target.mention} can now bypass protection."
+        if isinstance(target, discord.Member):
+            self.bypass_users.add(target.id)
+            embed.title = "✅ Bypass Added"
+            embed.description = f"{target.mention} can now bypass protection."
+        elif isinstance(target, discord.Role):
+            self.bypass_roles.add(target.id)
+            embed.title = "✅ Bypass Added"
+            embed.description = f"Role `{target.name}` can now bypass protection."
+        else:
+            embed.title = "❌ Invalid Target"
+            embed.description = "The provided target is invalid."
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-bypass-remove")
-    @has_permissions(administrator=True)
-    async def bypass_remove(self, ctx, target: discord.Member):
+    @has_permissions(PermissionLevel.OWNER)
+    async def bypass_remove(self, ctx, target: discord.abc.Snowflake):
         embed = discord.Embed(color=self.bot_main_color)
-        self.bypass_users.discard(target.id)
-        embed.title = "🚫 Bypass Removed"
-        embed.description = f"{target.mention} can no longer bypass protection."
+        if isinstance(target, discord.Member):
+            self.bypass_users.discard(target.id)
+            embed.title = "🚫 Bypass Removed"
+            embed.description = f"{target.mention} can no longer bypass protection."
+        elif isinstance(target, discord.Role):
+            self.bypass_roles.discard(target.id)
+            embed.title = "🚫 Bypass Removed"
+            embed.description = f"Role `{target.name}` can no longer bypass protection."
+        else:
+            embed.title = "❌ Invalid Target"
+            embed.description = "The provided target is invalid."
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-pause")
@@ -103,7 +134,7 @@ class AntiPing(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="set-anti-ping-timeout-duration")
-    @has_permissions(administrator=True)
+    @has_permissions(PermissionLevel.OWNER)
     async def set_timeout_duration(self, ctx, duration: str):
         embed = discord.Embed(color=self.bot_main_color)
         try:
@@ -116,7 +147,7 @@ class AntiPing(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-toggle")
-    @has_permissions(administrator=True)
+    @has_permissions(PermissionLevel.OWNER)
     async def protect_toggle(self, ctx):
         embed = discord.Embed(color=self.bot_main_color)
         self.protection_enabled = not self.protection_enabled
@@ -149,20 +180,13 @@ class AntiPing(commands.Cog):
                 original = message.reference.resolved
                 if original.author.id == mentioned.id and mentioned.mention not in message.content:
                     continue
-            
-            # Add a delay of 5 seconds before timing out the user
-            await asyncio.sleep(5)
 
-            # Ensure the bot does not timeout the user who ran the command
-            if message.author == mentioned:
-                continue
+            # Delay 5 seconds before attempting timeout
+            await discord.utils.sleep_until(discord.utils.utcnow() + timedelta(seconds=5))
 
             try:
-                # Use the correct timeout method
-                await mentioned.timeout(
-                    until=discord.utils.utcnow() + self.timeout_duration, 
-                    reason="Pinged a protected user/role"
-                )
+                # Corrected timeout method
+                await mentioned.timeout(discord.utils.utcnow() + self.timeout_duration, reason="Pinged a protected user/role")
                 embed = discord.Embed(
                     title=f"Do not ping {mentioned.mention}",
                     description=f"You have been timed out for {self.timeout_duration}.",
