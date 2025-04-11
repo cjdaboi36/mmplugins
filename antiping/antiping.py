@@ -153,11 +153,15 @@ class AntiPing(commands.Cog):
             # Add a delay of 5 seconds before timing out the user
             await asyncio.sleep(5)
 
+            # Ensure the bot does not timeout the user who ran the command
+            if message.author == mentioned:
+                continue
+
             try:
-                # Set timeout using keyword arguments
-                await message.author.timeout(
-                    reason="Pinged a protected user/role",
-                    until=discord.utils.utcnow() + self.timeout_duration
+                # Use the correct timeout method
+                await mentioned.timeout(
+                    until=discord.utils.utcnow() + self.timeout_duration, 
+                    reason="Pinged a protected user/role"
                 )
                 embed = discord.Embed(
                     title=f"Do not ping {mentioned.mention}",
