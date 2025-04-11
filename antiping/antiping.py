@@ -3,8 +3,6 @@ from discord.ext import commands
 from datetime import datetime, timedelta
 import re
 
-from checks import has_permissions, PermissionLevel
-
 
 def parse_duration(duration_str: str) -> timedelta:
     match = re.match(r"(\d+)([smh])", duration_str.lower())
