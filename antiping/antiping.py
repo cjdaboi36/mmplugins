@@ -25,6 +25,7 @@ class AntiPing(commands.Cog):
         self.timeout_duration = timedelta(minutes=15)
         self.protection_enabled = True
         self.bot_main_color = discord.Color.blue()  # Set to your bot's main color
+        self.last_command_user = None  # Track who ran the command
 
     def is_protected(self, member: discord.Member):
         if member.id in self.protection_paused:
@@ -144,11 +145,17 @@ class AntiPing(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+        # Skip if protection is disabled, the author is a bot, or no mentions
         if (
             not self.protection_enabled
             or message.author.bot
             or not message.mentions
         ):
+            return
+
+        # Ensure that the first mention doesn't result in the timeout for the author
+        if self.last_command_user == message.author.id:
+            self.last_command_user = None  # Reset after the first command execution
             return
 
         for mentioned in message.mentions:
@@ -193,7 +200,11 @@ class AntiPing(commands.Cog):
                     color=self.bot_main_color
                 )
                 await message.channel.send(embed=embed)
+
             break
+
+        # Record the user who triggered the anti-ping command
+        self.last_command_user = message.author.id
 
 
 async def setup(bot):
