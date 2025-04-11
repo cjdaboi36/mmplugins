@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from datetime import datetime, timedelta
 import re
-
+import asyncio
 
 def parse_duration(duration_str: str) -> timedelta:
     match = re.match(r"(\d+)([smh])", duration_str.lower())
@@ -157,6 +157,12 @@ class AntiPing(commands.Cog):
         if self.last_command_user and self.last_command_user == message.author.id:
             return
 
+        # Delay adding the command invoker to the list to avoid timing them out immediately
+        await asyncio.sleep(2)  # Delay added here to avoid immediate timeout.
+
+        # Add user to the list to prevent immediate timeouts
+        self.last_command_user = message.author.id
+
         for mentioned in message.mentions:
             if not isinstance(mentioned, discord.Member):
                 continue
@@ -177,7 +183,7 @@ class AntiPing(commands.Cog):
             await discord.utils.sleep_until(discord.utils.utcnow() + timedelta(seconds=5))
 
             try:
-                # Corrected timeout method
+                # Timeout logic
                 await mentioned.timeout(self.timeout_duration, reason="Pinged a protected user/role")
                 embed = discord.Embed(
                     title=f"Do not ping {mentioned.mention}",
@@ -201,10 +207,6 @@ class AntiPing(commands.Cog):
                 await message.channel.send(embed=embed)
 
             break
-
-        # Record the user who triggered the anti-ping command
-        self.last_command_user = message.author.id
-
 
 async def setup(bot):
     await bot.add_cog(AntiPing(bot))
