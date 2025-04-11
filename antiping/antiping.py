@@ -153,9 +153,8 @@ class AntiPing(commands.Cog):
         ):
             return
 
-        # Ensure that the first mention doesn't result in the timeout for the author
-        if self.last_command_user == message.author.id:
-            self.last_command_user = None  # Reset after the first command execution
+        # Skip the user who invoked the command to avoid timing them out
+        if self.last_command_user and self.last_command_user == message.author.id:
             return
 
         for mentioned in message.mentions:
