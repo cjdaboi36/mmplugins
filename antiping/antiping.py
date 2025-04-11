@@ -3,7 +3,7 @@ from discord.ext import commands
 from datetime import datetime, timedelta
 import re
 
-from checks import has_permissions, PermissionLevel
+from discord.ext.commands import has_permissions  # Change to standard permissions import
 
 
 def parse_duration(duration_str: str) -> timedelta:
@@ -46,7 +46,7 @@ class AntiPing(commands.Cog):
         )
 
     @commands.command(name="anti-ping-user-add")
-    @has_permissions(PermissionLevel.OWNER)
+    @has_permissions(administrator=True)  # Adjusted to use built-in permissions
     async def protect_add(self, ctx, target: discord.abc.Snowflake):
         embed = discord.Embed(color=self.bot_main_color)
         if isinstance(target, discord.Member):
@@ -63,7 +63,7 @@ class AntiPing(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-user-remove")
-    @has_permissions(PermissionLevel.OWNER)
+    @has_permissions(administrator=True)  # Adjusted to use built-in permissions
     async def protect_remove(self, ctx, target: discord.abc.Snowflake):
         embed = discord.Embed(color=self.bot_main_color)
         if isinstance(target, discord.Member):
@@ -80,7 +80,7 @@ class AntiPing(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-bypass-add")
-    @has_permissions(PermissionLevel.OWNER)
+    @has_permissions(administrator=True)  # Adjusted to use built-in permissions
     async def bypass_add(self, ctx, target: discord.abc.Snowflake):
         embed = discord.Embed(color=self.bot_main_color)
         if isinstance(target, discord.Member):
@@ -97,7 +97,7 @@ class AntiPing(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-bypass-remove")
-    @has_permissions(PermissionLevel.OWNER)
+    @has_permissions(administrator=True)  # Adjusted to use built-in permissions
     async def bypass_remove(self, ctx, target: discord.abc.Snowflake):
         embed = discord.Embed(color=self.bot_main_color)
         if isinstance(target, discord.Member):
@@ -134,7 +134,7 @@ class AntiPing(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="set-anti-ping-timeout-duration")
-    @has_permissions(PermissionLevel.OWNER)
+    @has_permissions(administrator=True)  # Adjusted to use built-in permissions
     async def set_timeout_duration(self, ctx, duration: str):
         embed = discord.Embed(color=self.bot_main_color)
         try:
@@ -147,7 +147,7 @@ class AntiPing(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-toggle")
-    @has_permissions(PermissionLevel.OWNER)
+    @has_permissions(administrator=True)  # Adjusted to use built-in permissions
     async def protect_toggle(self, ctx):
         embed = discord.Embed(color=self.bot_main_color)
         self.protection_enabled = not self.protection_enabled
