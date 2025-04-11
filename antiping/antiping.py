@@ -49,68 +49,80 @@ class AntiPing(commands.Cog):
     @has_permissions(administrator=True)
     async def protect_add(self, ctx, target: discord.abc.Snowflake):
         embed = discord.Embed(color=self.bot_main_color)
-        if isinstance(target, discord.Member):
+        try:
+            target = await commands.MemberConverter().convert(ctx, target)
             self.protected_users.add(target.id)
             embed.title = "🛡️ Protection Added"
             embed.description = f"{target.mention} is now protected."
-        elif isinstance(target, discord.Role):
-            self.protected_roles.add(target.id)
-            embed.title = "🛡️ Protection Added"
-            embed.description = f"Role `{target.name}` is now protected."
-        else:
-            embed.title = "❌ Invalid Target"
-            embed.description = "The provided target is invalid."
+        except commands.MemberNotFound:
+            try:
+                target = await commands.RoleConverter().convert(ctx, target)
+                self.protected_roles.add(target.id)
+                embed.title = "🛡️ Protection Added"
+                embed.description = f"Role `{target.name}` is now protected."
+            except commands.RoleNotFound:
+                embed.title = "❌ Invalid Target"
+                embed.description = "The provided target is invalid."
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-user-remove")
     @has_permissions(administrator=True)
     async def protect_remove(self, ctx, target: discord.abc.Snowflake):
         embed = discord.Embed(color=self.bot_main_color)
-        if isinstance(target, discord.Member):
+        try:
+            target = await commands.MemberConverter().convert(ctx, target)
             self.protected_users.discard(target.id)
             embed.title = "❌ Protection Removed"
             embed.description = f"{target.mention} is no longer protected."
-        elif isinstance(target, discord.Role):
-            self.protected_roles.discard(target.id)
-            embed.title = "❌ Protection Removed"
-            embed.description = f"Role `{target.name}` is no longer protected."
-        else:
-            embed.title = "❌ Invalid Target"
-            embed.description = "The provided target is invalid."
+        except commands.MemberNotFound:
+            try:
+                target = await commands.RoleConverter().convert(ctx, target)
+                self.protected_roles.discard(target.id)
+                embed.title = "❌ Protection Removed"
+                embed.description = f"Role `{target.name}` is no longer protected."
+            except commands.RoleNotFound:
+                embed.title = "❌ Invalid Target"
+                embed.description = "The provided target is invalid."
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-bypass-add")
     @has_permissions(administrator=True)
     async def bypass_add(self, ctx, target: discord.abc.Snowflake):
         embed = discord.Embed(color=self.bot_main_color)
-        if isinstance(target, discord.Member):
+        try:
+            target = await commands.MemberConverter().convert(ctx, target)
             self.bypass_users.add(target.id)
             embed.title = "✅ Bypass Added"
             embed.description = f"{target.mention} can now bypass protection."
-        elif isinstance(target, discord.Role):
-            self.bypass_roles.add(target.id)
-            embed.title = "✅ Bypass Added"
-            embed.description = f"Role `{target.name}` can now bypass protection."
-        else:
-            embed.title = "❌ Invalid Target"
-            embed.description = "The provided target is invalid."
+        except commands.MemberNotFound:
+            try:
+                target = await commands.RoleConverter().convert(ctx, target)
+                self.bypass_roles.add(target.id)
+                embed.title = "✅ Bypass Added"
+                embed.description = f"Role `{target.name}` can now bypass protection."
+            except commands.RoleNotFound:
+                embed.title = "❌ Invalid Target"
+                embed.description = "The provided target is invalid."
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-bypass-remove")
     @has_permissions(administrator=True)
     async def bypass_remove(self, ctx, target: discord.abc.Snowflake):
         embed = discord.Embed(color=self.bot_main_color)
-        if isinstance(target, discord.Member):
+        try:
+            target = await commands.MemberConverter().convert(ctx, target)
             self.bypass_users.discard(target.id)
             embed.title = "🚫 Bypass Removed"
             embed.description = f"{target.mention} can no longer bypass protection."
-        elif isinstance(target, discord.Role):
-            self.bypass_roles.discard(target.id)
-            embed.title = "🚫 Bypass Removed"
-            embed.description = f"Role `{target.name}` can no longer bypass protection."
-        else:
-            embed.title = "❌ Invalid Target"
-            embed.description = "The provided target is invalid."
+        except commands.MemberNotFound:
+            try:
+                target = await commands.RoleConverter().convert(ctx, target)
+                self.bypass_roles.discard(target.id)
+                embed.title = "🚫 Bypass Removed"
+                embed.description = f"Role `{target.name}` can no longer bypass protection."
+            except commands.RoleNotFound:
+                embed.title = "❌ Invalid Target"
+                embed.description = "The provided target is invalid."
         await ctx.send(embed=embed)
 
     @commands.command(name="anti-ping-pause")
