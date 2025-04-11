@@ -152,7 +152,7 @@ class ClaimThread(commands.Cog):
         thread = await self.db.find_one({'thread_id': str(ctx.thread.channel.id), 'guild': str(self.bot.modmail_guild.id)})
         if thread and str(ctx.author.id) in thread['claimers']:
             await self.db.find_one_and_update({'thread_id': str(ctx.thread.channel.id), 'guild': str(self.bot.modmail_guild.id)}, {'$pull': {'claimers': str(ctx.author.id)}})
-            description += f"ctx.author.mention} has unclaimed this thread."
+            description += 'Removed from claimers.\n'
 
         if str(ctx.thread.id) not in self.bot.config["subscriptions"]:
             self.bot.config["subscriptions"][str(ctx.thread.id)] = []
@@ -339,6 +339,5 @@ async def check_reply(ctx):
     return True
 
 
-        
 async def setup(bot):
     await bot.add_cog(ClaimThread(bot))
